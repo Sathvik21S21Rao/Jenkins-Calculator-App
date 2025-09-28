@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculator Frontend</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 400px; margin: auto; }
+        input, select, button { margin: 8px 0; width: 100%; padding: 8px; }
+        .result { margin-top: 20px; font-weight: bold; word-break: break-all; white-space: pre-wrap; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Calculator</h2>
+        <form id="calcForm">
+            <label for="operation">Operation:</label>
+            <select id="operation" name="operation">
+                <option value="power">Power (a^b)</option>
+                <option value="sqrt">Square Root (√a)</option>
+                <option value="factorial">Factorial (a!)</option>
+                <option value="ln">Natural Log (ln a)</option>
+            </select>
+            <label for="a">Number a:</label>
+            <input type="number" id="a" name="a" step="any" required>
+            <div id="bField">
+                <label for="b">Number b (for Power):</label>
+                <input type="number" id="b" name="b" step="any">
+            </div>
+            <button type="submit">Calculate</button>
+        </form>
+        <div class="result" id="result"></div>
+    </div>
+    <script>
+        const form = document.getElementById('calcForm');
+        const operationSelect = document.getElementById('operation');
+        const bField = document.getElementById('bField');
+        const resultDiv = document.getElementById('result');
+
+        // Show/hide b field based on operation
+        operationSelect.addEventListener('change', function() {
+            bField.style.display = (this.value === 'power') ? 'block' : 'none';
+        });
+        bField.style.display = 'block'; // Default for power
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const op = operationSelect.value;
+            const a = document.getElementById('a').value;
+            const b = document.getElementById('b').value;
+            let payload = { a: parseFloat(a) };
+            if (op === 'power') payload.b = parseFloat(b);
+            const url = `http://localhost:4567/${op}`;
+            resultDiv.textContent = 'Calculating...';
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.error) {
+                    resultDiv.textContent = `Error: ${data.error}`;
+                } else {
+                    resultDiv.textContent = `Result: ${data.result}`;
+                }
+            } catch (err) {
+                console.error("Error connecting to backend: ", err);
+                resultDiv.textContent = `Could not connect to backend.`;
+            }
+        });
+    </script>
+</body>
+</html>
