@@ -2,13 +2,13 @@ services:
   backend:
     build:
       context: ./backend
-    image: calc-backend:latest
+    image: calc-backend:${TAG}
     ports:
       - "4567:4567"
   frontend:
     build:
       context: ./frontend
-    image: calc-frontend:latest
+    image: calc-frontend:${TAG}
     ports:
       - "8080:8080"
     depends_on:
