@@ -1,2 +1,2 @@
-[deploy-target]
+[local]
 localhost ansible_connection=local

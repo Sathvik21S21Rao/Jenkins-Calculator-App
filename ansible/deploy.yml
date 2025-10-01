@@ -1,6 +1,6 @@
 ---
 - name: Deploy Calculator App using Docker Compose
-  hosts: deploy_target
+  hosts: local
   become: yes
   vars:
     tag: "{{ image_tag }}"
@@ -20,7 +20,7 @@
         source: pull
         state: present
 
-    - name: Start containers using $TAG if not already started
+    - name: Start containers using $TAG
       shell: |
         export TAG={{ tag }}
         docker compose up -d
