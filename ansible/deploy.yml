@@ -6,16 +6,21 @@
     tag: "{{ image_tag }}"
   tasks:
 
-    - name: Pull Docker images using $TAG if not already present
-      state: present
-      shell: |
-        export TAG={{ tag }}
-        docker compose pull
-      args:
-        chdir: "{{ ansible_env.HOME }}"
+    - name: Pull nihonium/calc-frontend image
+      docker_image:
+        name: nihonium/calc-frontend
+        tag: "{{ tag }}"
+        source: pull
+        state: present
+
+    - name: Pull nihonium/calc-backend image
+      docker_image:
+        name: nihonium/calc-backend
+        tag: "{{ tag }}"
+        source: pull
+        state: present
 
     - name: Start containers using $TAG if not already started
-      state: started
       shell: |
         export TAG={{ tag }}
         docker compose up -d
