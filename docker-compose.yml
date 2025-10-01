@@ -2,14 +2,14 @@ services:
   backend:
     build:
       context: ./backend
-    image: nihonium/calc-backend:${TAG}
+    image: nihonium/calc-backend:latest
     ports:
       - "4567:4567"
   frontend:
     build:
       context: ./frontend
-    image: nihonium/calc-frontend:${TAG}
+    image: nihonium/calc-frontend:latest
     ports:
-      - "8080:8080"
+      - "8000:8000"
     depends_on:
       - backend

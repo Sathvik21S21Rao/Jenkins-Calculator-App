@@ -9,7 +9,7 @@ import java.nio.file.Paths;
 
 public class FrontendServer {
     public static void main(String[] args) throws Exception {
-        int port = 8080;
+        int port = 8000;
         // Use relative path for Docker compatibility
         String baseDir = Paths.get("frontend/static").toAbsolutePath().toString();
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
