@@ -19,9 +19,20 @@
         source: pull
         state: present
 
-    - name: Start containers using $TAG
-      shell: |
-        export TAG={{ tag }}
-        docker compose up -d
-      args:
-        chdir: "{{ ansible_env.HOME }}"
+    - name: Start calc-backend container
+      docker_container:
+        name: calc-backend
+        image: nihonium/calc-backend:{{ tag }}
+        state: started
+        ports:
+          - "4567:4567"
+
+    - name: Start calc-frontend container
+      docker_container:
+        name: calc-frontend
+        image: nihonium/calc-frontend:{{ tag }}
+        state: started
+        ports:
+          - "8000:8000"
+        links:
+          - calc-backend
