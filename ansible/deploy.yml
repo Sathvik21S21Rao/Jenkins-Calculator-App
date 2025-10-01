@@ -1,7 +1,6 @@
 ---
 - name: Deploy Calculator App using Docker Compose
   hosts: local
-  become: yes
   vars:
     tag: "{{ image_tag }}"
   tasks:
