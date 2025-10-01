@@ -1,0 +1,23 @@
+---
+- name: Deploy Calculator App using Docker Compose
+  hosts: deploy_target
+  become: yes
+  vars:
+    tag: "{{ image_tag }}"
+  tasks:
+
+    - name: Pull Docker images using $TAG if not already present
+      state: present
+      shell: |
+        export TAG={{ tag }}
+        docker compose pull
+      args:
+        chdir: "{{ ansible_env.HOME }}"
+
+    - name: Start containers using $TAG if not already started
+      state: started
+      shell: |
+        export TAG={{ tag }}
+        docker compose up -d
+      args:
+        chdir: "{{ ansible_env.HOME }}"

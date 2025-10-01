@@ -1,0 +1,52 @@
+pipeline {
+    agent any
+
+    tools {
+        maven "M3"
+        git "Git"
+        dockerTool "Docker"
+    }
+
+    environment {
+        TAG = "${env.BUILD_NUMBER}"
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Sathvik21S21Rao/Jenkins-Calculator-App.git'
+                sh "mvn clean package"
+            }
+        }
+
+        stage('Docker Login, Build & Push') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'e062931d-27ed-40fc-9153-01dfbcce9344', 
+                                                  usernameVariable: 'DOCKER_USER', 
+                                                  passwordVariable: 'DOCKER_PASS')]) {
+                    sh """
+                        docker login -u "$DOCKER_USER" -p $DOCKER_PASS
+
+                        docker compose build --build-arg TAG=${TAG} frontend backend
+
+                        docker push nihonium/calc-frontend:${TAG}
+                        docker push nihonium/calc-backend:${TAG}
+
+                        docker logout
+                    """
+                }
+            }
+        }
+        stage("Ansible Deploy") {
+            steps {
+                sh """
+                    ansible-playbook ansible/deploy.yml \
+                      -i ansible/inventory \
+                      -e image_tag=$TAG
+                """
+            }
+        }
+    }
+}
+
+    
