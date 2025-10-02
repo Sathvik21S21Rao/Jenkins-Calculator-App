@@ -9,6 +9,7 @@
         input, select, button { margin: 8px 0; width: 100%; padding: 8px; }
         .result { margin-top: 20px; font-weight: bold; word-break: break-all; white-space: pre-wrap; }
         .error { color: red; }
+        .operand-field { display: block; }
     </style>
 </head>
 <body>
@@ -16,18 +17,8 @@
         <h2>Calculator</h2>
         <form id="calcForm">
             <label for="operation">Operation:</label>
-            <select id="operation" name="operation">
-                <option value="power">Power (a^b)</option>
-                <option value="sqrt">Square Root (√a)</option>
-                <option value="factorial">Factorial (a!)</option>
-                <option value="ln">Natural Log (ln a)</option>
-            </select>
-            <label for="a">Number a:</label>
-            <input type="number" id="a" name="a" step="any" required>
-            <div id="bField">
-                <label for="b">Number b (for Power):</label>
-                <input type="number" id="b" name="b" step="any">
-            </div>
+            <select id="operation" name="operation"></select>
+            <div id="operands"></div>
             <button type="submit">Calculate</button>
         </form>
         <div class="result" id="result"></div>
@@ -35,22 +26,65 @@
     <script>
         const form = document.getElementById('calcForm');
         const operationSelect = document.getElementById('operation');
-        const bField = document.getElementById('bField');
+        const operandsDiv = document.getElementById('operands');
         const resultDiv = document.getElementById('result');
+        let operations = {};
 
-        // Show/hide b field based on operation
-        operationSelect.addEventListener('change', function() {
-            bField.style.display = (this.value === 'power') ? 'block' : 'none';
-        });
-        bField.style.display = 'block'; // Default for power
+        // Fetch available operations and operand counts
+        async function loadOperations() {
+            try {
+                const res = await fetch('http://localhost:4567/operations', { method: 'POST' });
+                operations = await res.json();
+                console.log(operations);
+                operationSelect.innerHTML = '';
+                Object.entries(operations).forEach(([op, count]) => {
+                    const option = document.createElement('option');
+                    option.value = op;
+                    option.textContent = `${op} (${count} operand${count > 1 ? 's' : ''})`;
+                    operationSelect.appendChild(option);
+                });
+                updateOperandFields();
+            } catch (err) {
+                resultDiv.textContent = 'Could not load operations from backend.';
+            }
+        }
+
+        // Show correct number of operand fields
+        function updateOperandFields() {
+            operandsDiv.innerHTML = '';
+            const op = operationSelect.value;
+            const count = operations[op];
+            for (let i = 0; i < count; i++) {
+                const label = document.createElement('label');
+                label.htmlFor = `operand${i}`;
+                label.textContent = `Operand ${i + 1}:`;
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.id = `operand${i}`;
+                input.name = `operand${i}`;
+                input.step = 'any';
+                input.required = true;
+                input.className = 'operand-field';
+                operandsDiv.appendChild(label);
+                operandsDiv.appendChild(input);
+            }
+        }
+
+        operationSelect.addEventListener('change', updateOperandFields);
 
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             const op = operationSelect.value;
-            const a = document.getElementById('a').value;
-            const b = document.getElementById('b').value;
-            let payload = { a: parseFloat(a) };
-            if (op === 'power') payload.b = parseFloat(b);
+            const count = operations[op];
+            let operands = [];
+            for (let i = 0; i < count; i++) {
+                const val = document.getElementById(`operand${i}`).value;
+                operands.push(parseFloat(val));
+            }
+            const payload = {
+                operandCount: count,
+                operands: operands
+            };
             const url = `http://localhost:4567/${op}`;
             resultDiv.textContent = 'Calculating...';
             try {
@@ -66,10 +100,12 @@
                     resultDiv.textContent = `Result: ${data.result}`;
                 }
             } catch (err) {
-                console.error("Error connecting to backend: ", err);
                 resultDiv.textContent = `Could not connect to backend.`;
             }
         });
+
+        // Initial load
+        loadOperations();
     </script>
 </body>
 </html>

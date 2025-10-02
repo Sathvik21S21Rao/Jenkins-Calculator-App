@@ -3,19 +3,42 @@ package com.iiitb.backend;
 import static spark.Spark.*;
 import com.google.gson.Gson;
 import com.iiitb.operations.*;
-import java.math.BigInteger;
-import com.iiitb.backend.Calculator;
+
+import java.io.InputStream;
+import java.util.HashMap;
 
 public class calcBackend {
     public static void main(String[] args) {
-        port(4567);
-        unaryOperation<Number, Number> lnOp = new naturalLogOperation();
-        unaryOperation<Number, Number> sqrtOp = new sqrtOperation();
-        binaryOperation<Number, Number> powerOp = new powerOperation();
-        unaryOperation<Number, BigInteger> factorialOp = new factorialOperation();
+        java.util.Properties props = new java.util.Properties();
+        try (InputStream fis = calcBackend.class.getClassLoader().getResourceAsStream("config.properties");) {
+            props.load(fis);
+        } catch (Exception e) {
+            System.err.println("Could not load config.properties due to " + e.getMessage() + ", using default port 4567");
+        }
+        int portNum = 4567; // default port
+        if (props.getProperty("server.port") != null) {
+            try {
+            portNum = Integer.parseInt(props.getProperty("server.port"));
+            } catch (NumberFormatException ignored) {}
+        }
+        port(portNum);
         Calculator calculator = new Calculator();
+        
+        HashMap<String, Operation> operations = new HashMap<>();
+        for (String key : props.stringPropertyNames()) {
+            String value = props.getProperty(key);
+            if (value.equalsIgnoreCase("enable")) {
+                try {
+                    Operation op = operationFactory.createOperation(key);
+                    operations.put(key, op);
+                } catch (IllegalArgumentException e) {
+                    System.err.println("Unknown operation in config: " + key);
+                }
+            }
 
-         // CORS setup
+        }
+
+        
         options("/*", (request, response) -> {
             String accessControlRequestHeaders = request.headers("Access-Control-Request-Headers");
             if (accessControlRequestHeaders != null) {
@@ -33,63 +56,37 @@ public class calcBackend {
             response.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
             response.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
         });
+        post("/operations", (req, res) -> {
+            Gson gson = new Gson();
+            // Return available operations along with their operand count
+            HashMap<String, Integer> opsWithOperands = new HashMap<>();
+            for (String opName : operations.keySet()) {
+                Operation op = operations.get(opName);
+                opsWithOperands.put(opName, op.getOperandCount());
+            }
+            return gson.toJson(opsWithOperands);
+        });
         Gson gson = new Gson();
+        for(String opName : operations.keySet()) {
+            post("/" + opName, (req, res) -> {
+                try {
+                    OperationRequest requestData = gson.fromJson(req.body(), OperationRequest.class);
+                    Operation operation = operations.get(opName);
+                    if (operation == null) {
+                        res.status(400);
+                        return gson.toJson(new Response("Operation not supported", null));
+                    }
+                    String result = calculator.executeOperation(operation, requestData.operands);
+                    return gson.toJson(new Response(null, result));
+                } catch (Exception e) {
+                    res.status(400);
+                    return gson.toJson(new Response(e.getMessage(), null));
+                }
+            });
+        }
 
-        post("/power", (req, res) -> {
-            res.type("application/json");
-            OperationRequest opReq = gson.fromJson(req.body(), OperationRequest.class);
-            Number result = null;
-            String error = null;
-            try {
-                result = calculator.executeOperation(powerOp, opReq.a, opReq.b);
-            } catch (Exception e) {
-                error = e.getMessage();
-            }
-            return gson.toJson(new Response(error, result.toString()));
-        });
-
-        post("/sqrt", (req, res) -> {
-            res.type("application/json");
-            OperationRequest opReq = gson.fromJson(req.body(), OperationRequest.class);
-            Number result = null;
-            String error = null;
-            try {
-                result = calculator.executeOperation(sqrtOp, opReq.a);
-            } catch (Exception e) {
-                error = e.getMessage();
-            }
-            return gson.toJson(new Response(error, result.toString()));
-        });
-
-        post("/factorial", (req, res) -> {
-            res.type("application/json");
-            OperationRequest opReq = gson.fromJson(req.body(), OperationRequest.class);
-            BigInteger result = null;
-            String error = null;
-            try {
-                BigInteger input;
-                input = new BigInteger(String.valueOf(opReq.a.longValue()));
-                result = calculator.executeOperation(factorialOp, input);
-            } catch (Exception e) {
-                error = e.getMessage();
-                return gson.toJson(new Response(error, null));
-            }
-            return gson.toJson(new Response(error, result != null ? result.toString() : null));
-        });
-
-        post("/ln", (req, res) -> {
-            res.type("application/json");
-            OperationRequest opReq = gson.fromJson(req.body(), OperationRequest.class);
-            Number result = null;
-            String error = null;
-            try {
-                result = calculator.executeOperation(lnOp, opReq.a);
-            } catch (Exception e) {
-                error = e.getMessage();
-            }
-            return gson.toJson(new Response(error, result.toString()));
-        });
     }
+
 
     static class Response {
         String error;
@@ -99,4 +96,5 @@ public class calcBackend {
             this.result = result;
         }
     }
+    
 }

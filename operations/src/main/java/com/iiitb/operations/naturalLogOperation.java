@@ -1,10 +1,14 @@
 package com.iiitb.operations;
 
-public class naturalLogOperation extends unaryOperation<Number,Number> {
-    public Number execute(Number a) {
-        if (a.doubleValue() <= 0) {
-            throw new IllegalArgumentException("Cannot compute natural logarithm of non-positive number");
+public class naturalLogOperation extends unaryOperation {
+    String opName = "ln";
+    public String execute(Number... args) {
+        if (args.length != 1) {
+            throw new IllegalArgumentException("Natural logarithm operation requires exactly one argument");
         }
-        return Double.valueOf(Math.log(a.doubleValue()));
+        if(args[0].doubleValue() <= 0) {
+            throw new IllegalArgumentException("Natural logarithm is only defined for positive numbers");
+        }
+        return Math.log(args[0].doubleValue())+"";
     }
 }

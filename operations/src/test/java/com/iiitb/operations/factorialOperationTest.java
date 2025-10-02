@@ -12,24 +12,24 @@ class factorialOperationTest {
 
     @Test
     void testSmallPositiveFactorials() {
-        assertEquals(BigInteger.valueOf(2L), factorialOp.execute(BigInteger.valueOf(2L)));
-        assertEquals(BigInteger.valueOf(6L), factorialOp.execute(BigInteger.valueOf(3L)));
-        assertEquals(BigInteger.valueOf(24L), factorialOp.execute(BigInteger.valueOf(4L)));
-        assertEquals(BigInteger.valueOf(120L), factorialOp.execute(BigInteger.valueOf(5L)));
+        assertEquals("2", factorialOp.execute(BigInteger.valueOf(2L)));
+        assertEquals("6", factorialOp.execute(BigInteger.valueOf(3L)));
+        assertEquals("24", factorialOp.execute(BigInteger.valueOf(4L)));
+        assertEquals("120", factorialOp.execute(BigInteger.valueOf(5L)));
     }
 
     @Test
     void testMediumFactorials() {
-        assertEquals(BigInteger.valueOf(720L), factorialOp.execute(BigInteger.valueOf(6L)));
-        assertEquals(BigInteger.valueOf(5040L), factorialOp.execute(BigInteger.valueOf(7L)));
-        assertEquals(BigInteger.valueOf(40320L), factorialOp.execute(BigInteger.valueOf(8L)));
-        assertEquals(BigInteger.valueOf(3628800L), factorialOp.execute(BigInteger.valueOf(10L)));
+        assertEquals("720", factorialOp.execute(BigInteger.valueOf(6L)));
+        assertEquals("5040", factorialOp.execute(BigInteger.valueOf(7L)));
+        assertEquals("40320", factorialOp.execute(BigInteger.valueOf(8L)));
+        assertEquals("3628800", factorialOp.execute(BigInteger.valueOf(10L)));
     }
 
     @Test
     void testLargerFactorials() {
-        assertEquals(BigInteger.valueOf(479001600L), factorialOp.execute(BigInteger.valueOf(12L)));
-        assertEquals(BigInteger.valueOf(1307674368000L), factorialOp.execute(BigInteger.valueOf(15L)));
+        assertEquals("479001600", factorialOp.execute(BigInteger.valueOf(12L)));
+        assertEquals("1307674368000", factorialOp.execute(BigInteger.valueOf(15L)));
     }
 
     @Test
@@ -41,7 +41,7 @@ class factorialOperationTest {
 
     @Test
     void testEdgeCaseFactorials() {
-        assertEquals(BigInteger.ONE, factorialOp.execute(BigInteger.valueOf(0)));
-        assertEquals(BigInteger.ONE, factorialOp.execute(BigInteger.valueOf(1)));
+        assertEquals("1", factorialOp.execute(BigInteger.valueOf(0)));
+        assertEquals("1", factorialOp.execute(BigInteger.valueOf(1)));
     }
 }

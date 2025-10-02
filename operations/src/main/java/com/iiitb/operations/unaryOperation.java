@@ -1,5 +1,9 @@
 package com.iiitb.operations;
 
-public abstract class unaryOperation<T extends Number,R extends Number> {
-    public abstract R execute(T a);
+public abstract class unaryOperation implements Operation {
+  
+    @Override
+    public int getOperandCount() {
+        return 1;
+    }
 }

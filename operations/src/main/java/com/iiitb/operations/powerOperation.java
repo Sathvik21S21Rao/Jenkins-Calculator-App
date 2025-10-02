@@ -1,10 +1,14 @@
 package com.iiitb.operations;
 
 
-public class powerOperation extends binaryOperation<Number,Number> {
+public class powerOperation extends binaryOperation {
+    String opName = "power";
     @Override
-    public Number execute(Number a, Number b) {
-        return Double.valueOf(Math.pow(a.doubleValue(), b.doubleValue()));
+    public String execute(Number... args) {
+        if (args.length != 2) {
+            throw new IllegalArgumentException("Power operation requires exactly two arguments");
+        }
+        return Math.pow(args[0].doubleValue(), args[1].doubleValue())+"";
     }
     
 }
