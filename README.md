@@ -35,4 +35,4 @@ This is a modular calculator application with separate backend, frontend, and op
 
 ## Deployment
 
-Deployment is automated using Ansible scripts in the ansible directory. See deploy.yml for details.
+Deployment is automated using Ansible scripts in the ansible directory. See `deploy.yml` for details.
